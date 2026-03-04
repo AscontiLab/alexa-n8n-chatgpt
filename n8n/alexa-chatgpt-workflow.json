@@ -1,0 +1,140 @@
+{
+  "name": "Alexa ChatGPT Webhook",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "alexa-chatgpt",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook_node",
+      "name": "Alexa Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        240,
+        300
+      ],
+      "webhookId": "alexa-chatgpt"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.OPENAI_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  \"model\": \"gpt-4o-mini\",\n  \"messages\": [\n    { \"role\": \"system\", \"content\": \"Du bist ein hilfreicher Assistent. Antworte auf Deutsch, klar und knapp.\" },\n    { \"role\": \"user\", \"content\": $json.body.text || \"\" }\n  ],\n  \"temperature\": 0.5\n} }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "openai_request_node",
+      "name": "Ask ChatGPT",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        520,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "speech_field",
+              "name": "speech",
+              "value": "={{ $json.choices?.[0]?.message?.content || 'Ich konnte gerade keine Antwort erzeugen.' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "format_response_node",
+      "name": "Format Alexa Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        780,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { speech: $json.speech } }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "respond_node",
+      "name": "Respond to Alexa",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.3,
+      "position": [
+        1040,
+        300
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Alexa Webhook": {
+      "main": [
+        [
+          {
+            "node": "Ask ChatGPT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask ChatGPT": {
+      "main": [
+        [
+          {
+            "node": "Format Alexa Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Alexa Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Alexa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d6d3c96d-7a85-4a74-a6e2-6f4374ce3f9c",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "id": "alexa-chatgpt-workflow"
+}

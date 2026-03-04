@@ -1,0 +1,11 @@
+{
+  "name": "alexa-n8n-chatgpt-skill",
+  "version": "1.0.0",
+  "description": "Alexa Custom Skill Lambda that forwards user text to n8n webhook",
+  "main": "index.js",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "ask-sdk-core": "^2.14.0"
+  }
+}
