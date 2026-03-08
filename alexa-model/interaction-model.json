@@ -1,7 +1,7 @@
 {
   "interactionModel": {
     "languageModel": {
-      "invocationName": "chat assistent",
+      "invocationName": "haus",
       "intents": [
         {
           "name": "ChatIntent",
@@ -14,9 +14,15 @@
           "samples": [
             "{query}",
             "frage {query}",
-            "sage {query}",
-            "ich möchte wissen {query}",
-            "erkläre {query}"
+            "sage mir {query}",
+            "ich m\u00f6chte wissen {query}",
+            "erkl\u00e4re {query}",
+            "wie ist {query}",
+            "was ist {query}",
+            "mach {query}",
+            "schalte {query}",
+            "stelle {query}",
+            "kannst du {query}"
           ]
         },
         {
