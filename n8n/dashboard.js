@@ -690,15 +690,16 @@ var CL_VERBS = ['installieren','beschaffen','planen','anbringen','einrichten','i
 var CL_PREPS = ['in','im','mit','für','zu','am','an','bei'];
 
 async function openChecklist(roomId, roomName) {
+  var clBody = document.getElementById('cl-body');
   document.getElementById('cl-title').textContent = roomName;
-  document.getElementById('cl-body').innerHTML = '<div class="cl-loading">Lädt…</div>';
+  clBody.innerHTML = '<div class="cl-loading">Lädt…</div>';
   document.getElementById('cl-overlay').classList.add('open');
   try {
-    var resp = await fetch('/webhook/room-checklist?roomId=' + roomId);
+    var resp = await fetch('/webhook/room-checklist?roomId=' + encodeURIComponent(roomId));
     var data = await resp.json();
-    renderChecklist(data);
+    renderChecklist(clBody, data);
   } catch(e) {
-    document.getElementById('cl-body').innerHTML = '<div class="cl-empty">Fehler beim Laden.</div>';
+    clBody.innerHTML = '<div class="cl-empty">Fehler beim Laden.</div>';
   }
 }
 
@@ -745,15 +746,15 @@ function renderTaskItem(t, shortName) {
   var checked = t.done ? 'checked' : '';
   var labelClass = t.done ? 'done' : '';
   var h = '<div class="cl-item">';
-  h += '<input type="checkbox" class="cl-check" data-id="' + t.id + '" data-type="task" ' + checked + ' onchange="toggleItem(this)">';
+  h += '<input type="checkbox" class="cl-check" data-id="' + escAttr(t.id) + '" data-type="task" ' + checked + ' onchange="toggleItem(this)">';
   h += '<div class="cl-label ' + labelClass + '">' + escHtml(shortName) + '</div>';
   h += '</div>';
   return h;
 }
 
-function renderChecklist(data) {
-  var tasks = data.tasks || [];
-  var devices = data.devices || [];
+function renderChecklist(clBody, data) {
+  var tasks   = Array.isArray(data && data.tasks)   ? data.tasks   : [];
+  var devices = Array.isArray(data && data.devices) ? data.devices : [];
   var html = '';
 
   // --- Aufgaben ---
@@ -782,9 +783,9 @@ function renderChecklist(data) {
       html += '<div class="cl-group-title">' + escHtml(key) + '</div>';
       groups[key].forEach(function(t) {
         var stripped = stripPrefix(t.name);
-        var keyL = key.toLowerCase();
         var short = stripped;
-        if (keyL && stripped.toLowerCase().indexOf(keyL) === 0) {
+        var keyLower = key.toLowerCase();
+        if (keyLower && stripped.toLowerCase().indexOf(keyLower) === 0) {
           var rest = stripped.substring(key.length).replace(/^[-– ]+/, '').trim();
           if (rest) short = rest;
         }
@@ -810,14 +811,14 @@ function renderChecklist(data) {
       var short = stripPrefix(d.name);
       var meta = [d.typ, d.hersteller].filter(Boolean).join(' \u00b7 ');
       html += '<div class="cl-item">';
-      html += '<input type="checkbox" class="cl-check" data-id="' + d.id + '" data-type="device" onchange="toggleItem(this)">';
+      html += '<input type="checkbox" class="cl-check" data-id="' + escAttr(d.id) + '" data-type="device" onchange="toggleItem(this)">';
       html += '<div class="cl-label">' + escHtml(short) + (meta ? '<div class="cl-meta">' + escHtml(meta) + '</div>' : '') + '</div>';
       html += '</div>';
     });
   }
   html += '</div>';
 
-  document.getElementById('cl-body').innerHTML = html;
+  clBody.innerHTML = html;
 }
 
 async function toggleItem(el) {
@@ -830,11 +831,12 @@ async function toggleItem(el) {
     if (done) label.classList.add('done'); else label.classList.remove('done');
   }
   try {
-    await fetch('/webhook/room-check', {
+    var res = await fetch('/webhook/room-check', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({pageId: pageId, type: type, done: done})
     });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     if (type === 'device' && done) {
       // Gerät nach kurzer Zeit aus der Liste entfernen
       setTimeout(function() {
@@ -852,6 +854,9 @@ async function toggleItem(el) {
 
 function escHtml(s) {
   return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function escAttr(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 </script>
 </body>
