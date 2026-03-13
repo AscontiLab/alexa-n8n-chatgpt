@@ -47,7 +47,18 @@
             "stell {query}",
             "dimme {query}",
             "heller {query}",
-            "dunkler {query}"
+            "dunkler {query}",
+            "ist {query} geschlossen",
+            "schalte {query} ein",
+            "mach {query} heller",
+            "mach {query} dunkler",
+            "status {query}",
+            "starte {query}",
+            "aktiviere {query}",
+            "licht {query} an",
+            "licht {query} aus",
+            "was macht {query}",
+            "koenntest du {query}"
           ]
         },
         {
