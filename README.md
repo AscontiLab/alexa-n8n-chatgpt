@@ -1,34 +1,63 @@
 # Alexa + n8n + ChatGPT
 
-Dieses Projekt enthält:
-- `alexa-lambda/`: AWS Lambda Code für einen Alexa Custom Skill
-- `alexa-model/interaction-model.json`: deutsches Interaktionsmodell
-- `n8n/alexa-chatgpt-workflow.json`: importierbarer n8n Workflow
+## Ueberblick
 
-## 1) Alexa Skill anlegen
-1. Alexa Developer Console -> Custom Skill erstellen.
-2. Invocation Name z. B. `chat assistent`.
-3. Interaktionsmodell aus `alexa-model/interaction-model.json` importieren.
-4. Endpoint auf AWS Lambda ARN setzen.
+Sprachassistent-Stack fuer einen Alexa Custom Skill mit AWS Lambda als Entry Point und n8n als Workflow-Backend. Die Sprachverarbeitung laeuft ueber einen HTTP-Request von Lambda an n8n; die Antwort wird als Alexa-Speech zurueckgegeben.
 
-## 2) Lambda deployen
-Im Ordner `alexa-lambda`:
+## Zweck
+
+- Alexa-Eingaben aus einem Custom Skill entgegennehmen
+- An n8n weiterreichen
+- Dort KI-Logik, Routing und Integrationen ausfuehren
+- Die erzeugte Antwort wieder an Alexa ausspielen
+
+## Bestandteile
+
+- `alexa-lambda/`
+  - `index.js`: Lambda-Handler fuer Alexa Requests
+  - `package.json`: Node-Abhaengigkeiten fuer das Lambda-Paket
+- `alexa-model/interaction-model.json`
+  - Deutsches Alexa-Interaktionsmodell
+- `n8n/alexa-chatgpt-workflow.json`
+  - Importierbarer n8n-Workflow
+- `scripts/deploy_lambda.sh`
+  - Hilfsskript fuer Deployment/Packaging
+- `alexa-setup/`
+  - Zusatztasks fuer die Skill-Einrichtung
+
+## Voraussetzungen
+
+- AWS Lambda
+- Alexa Developer Console
+- n8n-Instanz mit oeffentlichem Webhook
+- OpenAI-API-Key in der n8n-Umgebung
+- Node.js 20.x fuer das Lambda-Deployment
+
+## Einrichtung
 
 ```bash
+cd alexa-lambda
 npm install
 zip -r function.zip .
 ```
 
-Dann `function.zip` in AWS Lambda hochladen (Node.js 20.x), Handler: `index.handler`.
+Danach:
 
-## 3) n8n Workflow
-1. `n8n/alexa-chatgpt-workflow.json` importieren.
-2. Workflow aktivieren.
-3. Sicherstellen, dass als Umgebungsvariable `OPENAI_API_KEY` gesetzt ist.
-4. Webhook URL ist dann: `https://agents.umzwei.de/webhook/alexa-chatgpt`.
+1. Custom Skill in der Alexa Developer Console anlegen
+2. `alexa-model/interaction-model.json` importieren
+3. `function.zip` in AWS Lambda hochladen
+4. Lambda-ARN als Skill-Endpoint hinterlegen
+5. `n8n/alexa-chatgpt-workflow.json` in n8n importieren und aktivieren
 
-## Erwartetes Request/Response-Format
-Alexa Lambda sendet an n8n:
+## Konfiguration
+
+- n8n erwartet `OPENAI_API_KEY` als Umgebungsvariable
+- Die Workflow-Webhook-URL muss im Lambda-Code bzw. in der Lambda-Konfiguration hinterlegt sein
+- Invocation Name und Intents werden im Alexa-Interaktionsmodell gepflegt
+
+## Nutzung
+
+Request von Alexa/Lambda an n8n:
 
 ```json
 {
@@ -40,10 +69,20 @@ Alexa Lambda sendet an n8n:
 }
 ```
 
-n8n antwortet an Lambda mit:
+Antwort von n8n an Lambda:
 
 ```json
 {
-  "speech": "Antworttext für Alexa"
+  "speech": "Antworttext fuer Alexa"
 }
 ```
+
+## Betriebshinweise
+
+- Das Repo ist vor allem ein Integrationspaket, keine monolithische App
+- Fehlerquellen liegen typischerweise in Skill-Endpoint, Webhook-Erreichbarkeit und fehlenden Secrets
+- Eine produktive Version sollte Timeouts, Fallback-Speech und Request-Signaturpruefung sauber absichern
+
+## Status
+
+Funktionsfaehiger Integrationsstand fuer Alexa -> Lambda -> n8n -> KI-Antwort.
