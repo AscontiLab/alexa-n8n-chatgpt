@@ -114,7 +114,7 @@ html,body{width:100%;height:100%;background:var(--bg);font-family:'Inter',system
 .spin{display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,0.1);border-top-color:var(--gold);border-radius:50%;animation:sp .6s linear infinite;flex-shrink:0}
 @keyframes sp{to{transform:rotate(360deg)}}
 .status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.cal-strip{flex-shrink:0;height:190px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(6,1fr);background:rgba(255,255,255,0.008)}
+.cal-strip{flex-shrink:0;height:190px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(6,1fr);background:rgba(255,255,255,0.02)}
 .sp-vol{display:flex;align-items:center;gap:6px;margin-left:8px}
 .sp-vol svg{flex-shrink:0;color:var(--text3)}
 .sp-vol input[type=range]{-webkit-appearance:none;width:70px;height:3px;border-radius:2px;background:rgba(255,255,255,0.15);outline:none;cursor:pointer}
@@ -386,7 +386,14 @@ html,body{width:100%;height:100%;background:var(--bg);font-family:'Inter',system
 </div>
 
 <!-- KALENDER -->
-<div class="cal-strip" id="cal-strip"></div>
+<div class="cal-strip" id="cal-strip">
+  <div class="cal-day"><div class="cdh"><span class="cdn">–</span></div><div class="empty">Lädt…</div></div>
+  <div class="cal-day"><div class="cdh"><span class="cdn">–</span></div><div class="empty">Lädt…</div></div>
+  <div class="cal-day"><div class="cdh"><span class="cdn">–</span></div><div class="empty">Lädt…</div></div>
+  <div class="cal-day"><div class="cdh"><span class="cdn">–</span></div><div class="empty">Lädt…</div></div>
+  <div class="cal-day"><div class="cdh"><span class="cdn">–</span></div><div class="empty">Lädt…</div></div>
+  <div class="cal-day"><div class="cdh"><span class="cdn">–</span></div><div class="empty">Lädt…</div></div>
+</div>
 
 
 </div>
@@ -558,9 +565,27 @@ function renderCalendar(days){
 async function loadCalendar(){
   try{
     var res=await fetch('/webhook/home-calendar');
+    if(!res.ok)throw new Error('HTTP '+res.status);
     var data=await res.json();
-    renderCalendar(data.days);
-  }catch(e){console.error('loadCalendar:',e);}
+    if(data&&data.days&&data.days.length){
+      renderCalendar(data.days);
+    }else{
+      showCalendarEmpty();
+    }
+  }catch(e){
+    console.error('loadCalendar:',e);
+    showCalendarError();
+  }
+}
+function showCalendarEmpty(){
+  var strip=document.getElementById('cal-strip');
+  if(!strip)return;
+  strip.innerHTML='<div class="cal-day" style="grid-column:1/-1;display:flex;align-items:center;justify-content:center"><div class="empty">Keine Termine</div></div>';
+}
+function showCalendarError(){
+  var strip=document.getElementById('cal-strip');
+  if(!strip)return;
+  strip.innerHTML='<div class="cal-day" style="grid-column:1/-1;display:flex;align-items:center;justify-content:center"><div class="empty">Kalender nicht erreichbar</div></div>';
 }
 
 loadState();
