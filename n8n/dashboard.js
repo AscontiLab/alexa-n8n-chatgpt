@@ -152,6 +152,39 @@ html,body{width:100%;height:100%;background:var(--bg);font-family:'Inter',system
 .sp-btn:hover{color:var(--text)}
 .sp-btn.sp-play{color:var(--green);width:36px;height:36px;border:1px solid rgba(110,200,124,0.3);border-radius:50%}
 .sp-btn.sp-play:hover{background:rgba(110,200,124,0.1)}
+
+/* ── Mobile ── */
+@media(max-width:600px){
+  html,body{overflow:auto}
+  .shell{height:auto;min-height:100dvh}
+  .topbar{height:auto;flex-wrap:wrap;gap:8px;padding:10px 14px}
+  .topbar-left{width:100%;justify-content:space-between}
+  .topbar-center{position:static;transform:none;order:3;width:100%;display:flex;align-items:center;gap:8px}
+  .clock{font-size:18px}
+  .clock-date{font-size:10px;margin-top:0}
+  .topbar-right{width:100%;order:2;justify-content:space-between}
+  .tabs{flex:1}
+  .tab{padding:5px 10px;font-size:11px}
+  .av{width:26px;height:26px;font-size:9px}
+  .gn-btn{padding:4px 10px;font-size:11px}
+  .rooms{overflow:auto;flex:none;padding:10px 10px 8px}
+  .floor.active{flex:none}
+  .row{flex:none}
+  .r4,.r3{grid-template-columns:1fr}
+  .r2{grid-template-columns:1fr}
+  .card{padding:12px}
+  .sp-card{margin:0 10px 4px;border-radius:10px}
+  .sp-vol{display:none}
+  .cal-strip{grid-template-columns:repeat(3,1fr);height:auto;min-height:140px}
+  .cal-day:nth-child(n+4){display:none}
+}
+@media(min-width:601px) and (max-width:900px){
+  .r4,.r3{grid-template-columns:repeat(2,1fr)}
+  .cal-strip{grid-template-columns:repeat(4,1fr)}
+  .cal-day:nth-child(n+5){display:none}
+  .topbar{padding:0 14px}
+  .tabs .tab{padding:5px 10px;font-size:12px}
+}
 </style>
 </head>
 <body>
